@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Revision Priority Submission</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a cleaner mobile-first look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Custom scrollbar for better visual separation */
+        .scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 4px;
+        }
+        .scrollable-content {
+            max-height: 80vh; 
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="min-h-screen p-4 sm:p-8 flex items-start justify-center">
+        <div class="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6 sm:p-10">
+            <!-- Header Section -->
+            <header class="mb-6 border-b pb-4">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <svg class="w-8 h-8 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.402 9.49 4.75 8 4.75c-1.49 0-2.832.652-4 1.503M12 6.253c1.168 0 2.51.652 4 1.503 1.168.851 2.51 1.503 4 1.503s2.832-.652 4-1.503m-4 1.503v13m0-13C13.168 5.402 14.51 4.75 16 4.75s2.832.652 4 1.503M16 4.75c-1.49 0-2.832.652-4 1.503-1.168.851-2.51 1.503-4 1.503s-2.832-.652-4-1.503M12 19.253c-1.168 0-2.51-.652-4-1.503-1.168-.851-2.51-1.503-4-1.503s-2.832.652-4 1.503M12 19.253c1.168 0 2.51-.652 4-1.503 1.168-.851 2.51-1.503 4-1.503s2.832.652 4 1.503M16 17.75c-1.49 0-2.832.652-4-1.503-1.168-.851-2.51-1.503-4-1.503s-2.832.652-4 1.503M12 17.75c1.168 0 2.51-.652 4-1.503 1.168-.851 2.51-1.503 4-1.503s2.832.652 4 1.503"></path></svg>
+                    Physics Revision Priority Vote
+                </h1>
+                <p class="text-gray-500 mt-1">Submit your preferred revision priority order (1=Highest) and identify your personal strengths/weaknesses.</p>
+            </header>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="text-center py-10">
+                <div class="animate-spin inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+                <p class="mt-2 text-indigo-600">Initializing app and loading results...</p>
+            </div>
+
+            <!-- Main Content: Form / Results -->
+            <div id="main-content" class="space-y-8" style="display: none;">
+                
+                <!-- Submission Status Message -->
+                <div id="submission-status" class="hidden p-4 rounded-lg text-sm" role="alert"></div>
+
+                <!-- 1. Submission Form -->
+                <section id="submission-form" class="border border-indigo-200 rounded-lg p-5 shadow-inner">
+                    <h2 class="text-xl font-semibold mb-4 text-indigo-700">Your Revision Preference</h2>
+                    
+                    <!-- Name Input -->
+                    <div class="mb-5">
+                        <label for="user-name" class="block text-sm font-medium text-gray-700 mb-1">Your Name (Mandatory)</label>
+                        <input type="text" id="user-name" placeholder="E.g., Priya Sharma" required
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                    </div>
+
+                    <!-- Priority Order Selection -->
+                    <h3 class="text-lg font-medium text-gray-800 mb-3">2. Set Priority Rank (1 = Most Important)</h3>
+                    <div id="priority-selection" class="space-y-3">
+                        <!-- Topics will be injected here -->
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <!-- Strongest Topic -->
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">3. Pick Your Strongest Topic</h3>
+                        <select id="strongest-topic" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                            <option value="">-- Select One (Your current strength) --</option>
+                        </select>
+                        
+                        <!-- Weakest Topic -->
+                        <h3 class="text-lg font-medium text-gray-800 mt-4 mb-3">4. Pick Your Weakest Topic</h3>
+                        <select id="weakest-topic" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500">
+                            <option value="">-- Select One (Needs most attention) --</option>
+                        </select>
+                    </div>
+
+                    <button id="submit-button" class="mt-6 w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:bg-indigo-400">
+                        Submit My Preferences
+                    </button>
+                    <p id="submission-warning" class="text-xs text-center text-red-500 mt-2 hidden">Please ensure all topics have a unique priority rank, and both strength/weakness are selected.</p>
+                </section>
+
+                <!-- 2. Aggregated Results Section -->
+                <section id="results-section">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900">Community Revision Priority</h2>
+                    <p class="text-sm text-gray-600 mb-4" id="total-submissions">Total Submissions: 0</p>
+                    
+                    <div id="results-loading" class="text-center py-4 hidden">
+                        <div class="animate-pulse text-indigo-500">Calculating new priorities...</div>
+                    </div>
+
+                    <!-- Priority Results -->
+                    <div class="bg-indigo-50 p-4 rounded-lg mb-6 shadow-md">
+                        <h3 class="text-xl font-semibold mb-3 text-indigo-700">Overall Priority Rank (Lower Average Rank = Higher Priority)</h3>
+                        <div id="aggregated-priority-list" class="space-y-4">
+                            <!-- Results calculated from submissions will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Strength/Weakness Tally -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-green-50 p-4 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-3 text-green-700">Most Common "Strongest" Topic</h3>
+                            <div id="strongest-tally-list" class="space-y-2"></div>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-3 text-red-700">Most Common "Weakest" Topic</h3>
+                            <div id="weakest-tally-list" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+
+            <!-- Error Message Box -->
+            <div id="error-message" class="hidden mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                <p class="font-bold">Error:</p>
+                <p id="error-text"></p>
+            </div>
+
+            <!-- User Info (MANDATORY for multi-user apps) -->
+            <footer class="mt-6 pt-4 border-t text-sm text-gray-500">
+                <p>Authenticated User ID: <span id="user-id" class="font-mono text-gray-700 break-all">...loading...</span></p>
+                <p>Data stored publicly under App ID: <span id="app-id" class="font-mono text-gray-700 break-all">...loading...</span></p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports (Module style) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, where, Timestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- DOM Elements ---
+        const loadingEl = document.getElementById('loading');
+        const mainContentEl = document.getElementById('main-content');
+        const userIdEl = document.getElementById('user-id');
+        const appIdEl = document.getElementById('app-id');
+        const errorEl = document.getElementById('error-message');
+        const errorTextEl = document.getElementById('error-text');
+        const submissionStatusEl = document.getElementById('submission-status');
+        const submitButtonEl = document.getElementById('submit-button');
+        const userNameEl = document.getElementById('user-name');
+        const prioritySelectionEl = document.getElementById('priority-selection');
+        const strongestTopicEl = document.getElementById('strongest-topic');
+        const weakestTopicEl = document.getElementById('weakest-topic');
+        const resultsLoadingEl = document.getElementById('results-loading');
+        const totalSubmissionsEl = document.getElementById('total-submissions');
+        const aggregatedPriorityListEl = document.getElementById('aggregated-priority-list');
+        const strongestTallyListEl = document.getElementById('strongest-tally-list');
+        const weakestTallyListEl = document.getElementById('weakest-tally-list');
+
+        // --- App State ---
+        let db, auth;
+        let userId = null;
+        let isAuthReady = false;
+        const COLLECTION_PATH = 'physics_preferences'; // Public collection for submissions
+        
+        // Master list of topics with descriptions (N=7 topics)
+        const masterTopics = [
+            { id: 'topic_1', name: 'Mechanics and Gravitation', description: 'Kinematics, Laws of Motion, Work, Energy and Power, System of Particles and Rotational Motion, Gravitation, Properties of Bulk Matter (Solids/Fluids).' },
+            { id: 'topic_2', name: 'Thermodynamics and Gases', description: 'Thermal Properties of Matter, Thermodynamics, Kinetic Theory of Gases.' },
+            { id: 'topic_3', name: 'Electrostatics and Current', description: 'Electric Charges and Fields, Electrostatic Potential and Capacitance, Current Electricity.' },
+            { id: 'topic_4', name: 'Magnetism and Induction', description: 'Moving Charges and Magnetism, Magnetism and Matter, Electromagnetic Induction, Alternating Current.' },
+            { id: 'topic_5', name: 'Waves and Optics', description: 'Electromagnetic Waves, Ray Optics and Optical Instruments, Wave Optics.' },
+            { id: 'topic_6', name: 'Modern Physics', description: 'Dual Nature of Radiation and Matter, Atoms, Nuclei.' },
+            { id: 'topic_7', name: 'Electronics and Communication', description: 'Semiconductor Electronics: Materials, Devices and Simple Circuits, Communication Systems.' },
+        ];
+        const NUM_TOPICS = masterTopics.length;
+
+        // --- Utility Functions ---
+
+        function displayError(message) {
+            console.error('Application Error:', message);
+            errorTextEl.textContent = message;
+            errorEl.classList.remove('hidden');
+            loadingEl.style.display = 'none';
+        }
+
+        function displayStatus(message, isSuccess = true) {
+            submissionStatusEl.textContent = message;
+            submissionStatusEl.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'text-green-700', 'text-red-700');
+            if (isSuccess) {
+                submissionStatusEl.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                submissionStatusEl.classList.add('bg-red-100', 'text-red-700');
+            }
+            setTimeout(() => {
+                submissionStatusEl.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // --- Form Rendering ---
+
+        function renderForm() {
+            prioritySelectionEl.innerHTML = '';
+            strongestTopicEl.innerHTML = '<option value="">-- Select One (Your current strength) --</option>';
+            weakestTopicEl.innerHTML = '<option value="">-- Select One (Needs most attention) --</option>';
+
+            const priorityRanks = Array.from({ length: NUM_TOPICS }, (_, i) => i + 1);
+
+            masterTopics.forEach((topic, index) => {
+                // 1. Priority Selection Block
+                const rankSelect = document.createElement('select');
+                rankSelect.className = 'priority-rank-select p-2 border border-gray-300 rounded-lg w-1/4 sm:w-1/6 text-center';
+                rankSelect.setAttribute('data-topic-id', topic.id);
+                rankSelect.required = true;
+
+                rankSelect.innerHTML += `<option value="" disabled selected>--</option>`;
+                priorityRanks.forEach(rank => {
+                    rankSelect.innerHTML += `<option value="${rank}">${rank}</option>`;
+                });
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex flex-col sm:flex-row sm:items-center p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm';
+                itemEl.innerHTML = `
+                    <div class="flex-grow min-w-0 mb-2 sm:mb-0">
+                        <p class="text-base font-semibold text-gray-800">${topic.name}</p>
+                        <p class="text-xs text-gray-500 italic mt-1">${topic.description}</p>
+                    </div>
+                    <div class="flex items-center sm:ml-4">
+                        <span class="text-sm font-medium text-gray-600 mr-2">Rank:</span>
+                    </div>
+                `;
+                itemEl.querySelector('.flex.items-center').appendChild(rankSelect);
+                prioritySelectionEl.appendChild(itemEl);
+
+
+                // 2. Strongest/Weakest Select Options
+                const option = `<option value="${topic.id}">${topic.name}</option>`;
+                strongestTopicEl.innerHTML += option;
+                weakestTopicEl.innerHTML += option;
+            });
+
+            submitButtonEl.addEventListener('click', handleSubmit);
+            
+            loadingEl.style.display = 'none';
+            mainContentEl.style.display = 'block';
+        }
+
+        // --- Aggregation & Results ---
+
+        function calculateResults(submissions) {
+            resultsLoadingEl.classList.add('hidden');
+            
+            totalSubmissionsEl.textContent = `Total Submissions: ${submissions.length}`;
+
+            // 1. Initialize Tally objects
+            const rankSums = masterTopics.reduce((acc, topic) => ({ ...acc, [topic.id]: { sum: 0, count: 0, name: topic.name } }), {});
+            const strongestTally = masterTopics.reduce((acc, topic) => ({ ...acc, [topic.id]: { count: 0, name: topic.name } }), {});
+            const weakestTally = masterTopics.reduce((acc, topic) => ({ ...acc, [topic.id]: { count: 0, name: topic.name } }), {});
+
+            // 2. Process Submissions
+            submissions.forEach(submission => {
+                if (submission.priorityOrder && Array.isArray(submission.priorityOrder)) {
+                    submission.priorityOrder.forEach(p => {
+                        if (rankSums[p.id]) {
+                            rankSums[p.id].sum += p.rank;
+                            rankSums[p.id].count += 1; // Should always be 1 for a valid submission
+                        }
+                    });
+                }
+                if (submission.strongestTopicId && strongestTally[submission.strongestTopicId]) {
+                    strongestTally[submission.strongestTopicId].count++;
+                }
+                if (submission.weakestTopicId && weakestTally[submission.weakestTopicId]) {
+                    weakestTally[submission.weakestTopicId].count++;
+                }
+            });
+
+            // 3. Calculate Average Ranks and Sort (Lower Average Rank = Higher Priority)
+            const aggregatedRanks = Object.values(rankSums)
+                .map(item => ({
+                    name: item.name,
+                    avgRank: item.count > 0 ? (item.sum / item.count) : null,
+                    count: item.count // Should equal total submissions if all filled it out
+                }))
+                .filter(item => item.avgRank !== null)
+                .sort((a, b) => a.avgRank - b.avgRank); // Sort ascending (1st priority has smallest rank)
+
+            // 4. Format and Render Priority List
+            aggregatedPriorityListEl.innerHTML = aggregatedRanks.map((item, index) => `
+                <div class="flex items-center justify-between p-3 rounded-md bg-white border-l-4 ${index === 0 ? 'border-green-600' : 'border-indigo-400'} shadow">
+                    <div class="flex items-center">
+                        <span class="text-xl font-bold w-8 text-center ${index === 0 ? 'text-green-600' : 'text-indigo-600'}">${index + 1}</span>
+                        <p class="ml-4 font-medium text-gray-800">${item.name}</p>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-600">Avg Rank: ${item.avgRank.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // 5. Format and Render Strongest/Weakest Tallies
+            const renderTally = (tallyObj, containerEl, isStrongest) => {
+                const list = Object.values(tallyObj)
+                    .filter(item => item.count > 0)
+                    .sort((a, b) => b.count - a.count);
+
+                if (list.length === 0) {
+                    containerEl.innerHTML = `<p class="text-sm text-gray-500">No data submitted yet.</p>`;
+                    return;
+                }
+
+                containerEl.innerHTML = list.map(item => `
+                    <div class="flex justify-between items-center py-1">
+                        <p class="text-sm ${isStrongest ? 'text-green-800' : 'text-red-800'} font-medium">${item.name}</p>
+                        <span class="text-lg font-bold ${isStrongest ? 'text-green-600' : 'text-red-600'}">${item.count}</span>
+                    </div>
+                `).join('');
+            };
+
+            renderTally(strongestTally, strongestTallyListEl, true);
+            renderTally(weakestTally, weakestTallyListEl, false);
+        }
+
+        function setupRealtimeListener() {
+            if (!isAuthReady || !db) return;
+            
+            const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_PATH);
+            
+            // Listen for real-time updates to all submissions
+            onSnapshot(collectionRef, (snapshot) => {
+                resultsLoadingEl.classList.remove('hidden');
+                const submissions = [];
+                snapshot.forEach(doc => {
+                    submissions.push(doc.data());
+                });
+                calculateResults(submissions);
+            }, (error) => {
+                displayError('Realtime results listener failed: ' + error.message);
+            });
+        }
+        
+        // --- Form Submission ---
+
+        async function handleSubmit() {
+            if (!isAuthReady || !userId || !db) {
+                return displayError("Authentication not complete. Please refresh or wait.");
+            }
+            
+            const name = userNameEl.value.trim();
+            const strongestTopicId = strongestTopicEl.value;
+            const weakestTopicId = weakestTopicEl.value;
+            
+            // Get Priority Ranks
+            const rankSelectors = document.querySelectorAll('.priority-rank-select');
+            const priorityOrder = [];
+            const selectedRanks = new Set();
+            let isValid = true;
+
+            rankSelectors.forEach(select => {
+                const rank = select.value;
+                const topicId = select.getAttribute('data-topic-id');
+                
+                if (!rank) {
+                    isValid = false;
+                    return;
+                }
+                
+                if (selectedRanks.has(rank)) {
+                    isValid = false; // Duplicate rank detected
+                    return;
+                }
+                
+                selectedRanks.add(rank);
+                priorityOrder.push({ id: topicId, rank: parseInt(rank, 10) });
+            });
+
+            // Basic Validation
+            if (!name) {
+                return displayError("Please enter your name.");
+            }
+            if (!strongestTopicId || !weakestTopicId) {
+                return displayError("Please select both your Strongest and Weakest topics.");
+            }
+            if (strongestTopicId === weakestTopicId) {
+                return displayError("Strongest and Weakest topics cannot be the same.");
+            }
+            if (!isValid || priorityOrder.length !== NUM_TOPICS || selectedRanks.size !== NUM_TOPICS) {
+                document.getElementById('submission-warning').classList.remove('hidden');
+                return displayError(`Please ensure all ${NUM_TOPICS} topics have a unique priority rank from 1 to ${NUM_TOPICS}.`);
+            }
+            document.getElementById('submission-warning').classList.add('hidden');
+
+
+            submitButtonEl.disabled = true;
+            submitButtonEl.textContent = "Submitting...";
+
+            try {
+                // Document path: /artifacts/{appId}/public/data/physics_preferences/{userId}
+                const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_PATH, userId);
+
+                const submissionData = {
+                    userId: userId,
+                    name: name,
+                    timestamp: Timestamp.now(),
+                    priorityOrder: priorityOrder,
+                    strongestTopicId: strongestTopicId,
+                    weakestTopicId: weakestTopicId,
+                    // Storing the names too for easier result calculation, although IDs are primary
+                    strongestTopicName: masterTopics.find(t => t.id === strongestTopicId).name,
+                    weakestTopicName: masterTopics.find(t => t.id === weakestTopicId).name,
+                };
+                
+                // Use setDoc to create/overwrite the document, ensuring only one submission per user ID
+                await setDoc(userDocRef, submissionData);
+
+                displayStatus("Your revision preferences have been successfully submitted!", true);
+            } catch (error) {
+                displayStatus('Submission failed: ' + error.message, false);
+                console.error("Submission Error:", error);
+            } finally {
+                submitButtonEl.disabled = false;
+                submitButtonEl.textContent = "Submit My Preferences";
+            }
+        }
+
+        // --- Core Initialization ---
+
+        async function initFirebase() {
+            try {
+                // 1. Initialize App and Services
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug'); // Enable debug logging for Firebase
+
+                // 2. Handle Authentication State
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        // User is signed in (either custom token or anonymous)
+                        userId = user.uid;
+                        userIdEl.textContent = userId;
+                        appIdEl.textContent = appId;
+                        isAuthReady = true;
+
+                        // 3. Render the form now that we have the userId
+                        renderForm();
+
+                        // 4. Start real-time data listener for results aggregation
+                        setupRealtimeListener();
+
+                    } else {
+                        // No user is signed in, perform sign-in
+                        try {
+                            if (initialAuthToken) {
+                                // Sign in with the provided custom token
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                // Sign in anonymously
+                                await signInAnonymously(auth);
+                            }
+                        } catch (e) {
+                            displayError("Authentication failed: " + e.message + ". Please check Firebase configuration/token.");
+                        }
+                    }
+                });
+
+            } catch (error) {
+                displayError("Firebase initialization failed: " + error.message);
+            }
+        }
+
+        // Start the application setup
+        initFirebase();
+
+    </script>
+</body>
+</html>
+
